@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",              // Soporte moderno para async/await, nullish coalescing, etc.
+    "module": "CommonJS",            // Compatible con Node.js (require/exports)
+    "outDir": "dist",                // Carpeta donde se compilan los .js
+    "rootDir": "src",                // Carpeta donde están tus .ts
+    "strict": true,                  // Tipado estricto: ayuda a evitar errores silenciosos
+    "esModuleInterop": true,         // Permite importar librerías como Express sin errores
+    "resolveJsonModule": true        // Permite importar archivos JSON directamente
+  },
+    "include": ["src", "custom.d.ts"]             // Solo compila archivos dentro de src/
+}
