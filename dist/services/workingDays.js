@@ -20,7 +20,7 @@ async function calculateWorkingDate(params) {
     if (params.hours) {
         current = (0, timeUtils_1.addWorkingHours)(current, params.hours, holidays);
     }
-    return { date: current.setZone('utc').toISO({ suppressMilliseconds: true }) + 'Z' };
+    return { date: current.setZone('utc').toISO() ?? '' };
 }
 async function fetchColombianHolidays() {
     const res = await axios_1.default.get('https://content.capta.co/Recruitment/WorkingDays.json');

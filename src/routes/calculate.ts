@@ -1,7 +1,7 @@
-// routes/calculate.ts
 import express, { Request, Response } from 'express';
 import { calculateWorkingDate } from '../services/workingDays';
 import { QueryParams, SuccessResponse, ErrorResponse } from '../types';
+import { DateTime } from 'luxon';
 
 const router = express.Router();
 
@@ -60,9 +60,25 @@ const router = express.Router();
  *         description: Error interno
  */
 router.get('/calculate', async (req: Request, res: Response) => {
-  const { days, hours, date } = req.query as QueryParams;
+  const daysRaw = req.query.days;
+  const hoursRaw = req.query.hours;
+  const dateRaw = req.query.date as string | undefined;
 
-  if (!days && !hours) {
+  const days = daysRaw !== undefined ? Number(daysRaw) : undefined;
+  const hours = hoursRaw !== undefined ? Number(hoursRaw) : undefined;
+
+if (
+  (daysRaw !== undefined && (isNaN(Number(daysRaw)) || !Number.isInteger(Number(daysRaw)) || Number(daysRaw) < 0)) ||
+  (hoursRaw !== undefined && (isNaN(Number(hoursRaw)) || !Number.isInteger(Number(hoursRaw)) || Number(hoursRaw) < 0))
+) {
+  const error: ErrorResponse = {
+    error: 'InvalidParameters',
+    message: 'Los parámetros "days" y "hours" deben ser enteros positivos.',
+  };
+  return res.status(400).json(error);
+}
+
+  if (days === undefined && hours === undefined) {
     const error: ErrorResponse = {
       error: 'InvalidParameters',
       message: 'Se debe proporcionar al menos "days" o "hours".',
@@ -70,8 +86,19 @@ router.get('/calculate', async (req: Request, res: Response) => {
     return res.status(400).json(error);
   }
 
+  if (dateRaw !== undefined) {
+    const date = DateTime.fromISO(dateRaw, { zone: 'utc' });
+    if (!date.isValid) {
+      const error: ErrorResponse = {
+        error: 'InvalidParameters',
+        message: 'El parámetro "date" debe ser una fecha ISO 8601 válida en UTC.',
+      };
+      return res.status(400).json(error);
+    }
+  }
+
   try {
-    const result: SuccessResponse = await calculateWorkingDate({ days, hours, date });
+    const result: SuccessResponse = await calculateWorkingDate({ days, hours, date: dateRaw });
     return res.status(200).json(result);
   } catch (err) {
     const error: ErrorResponse = {
